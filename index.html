@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>あみだくじゲーム</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div id="game-container">
+    <h1>あみだくじゲーム</h1>
+
+    <!-- スコア・レベル表示エリア -->
+    <div id="game-info">
+      <div class="info-item">
+        <span class="info-label">レベル:</span>
+        <span id="current-level">1</span>
+      </div>
+      <div class="info-item">
+        <span class="info-label">スコア:</span>
+        <span id="current-score">0</span>
+      </div>
+      <div class="info-item">
+        <span class="info-label">残り回数:</span>
+        <span id="remaining-turns">10</span>
+      </div>
+    </div>
+
+    <div id="character-selection">
+      <p>キャラクターを選んでね！</p>
+      <img src="images/character1.png" alt="キャラクター1" id="char1" class="character-icon">
+      <img src="images/character2.png" alt="キャラクター2" id="char2" class="character-icon">
+      <img src="images/character3.png" alt="キャラクター3" id="char3" class="character-icon">
+    </div>
+
+    <div id="amidakuji-area">
+      <canvas id="amidakujiCanvas"></canvas>
+      <div id="fireworks-container">
+        <img src="images/fireworks.png" alt="花火" id="fireworks" class="firework-animation">
+      </div>
+    </div>
+
+    <div id="result-area" style="display: none;">
+      <img src="" alt="結果" id="result-image">
+      <p id="result-message"></p>
+      <p id="score-change"></p>
+      <button id="next-button">次のレベルへ</button>
+      <button id="reset-button">もう一度遊ぶ</button>
+    </div>
+
+    <!-- ゲーム終了画面 -->
+    <div id="game-over-area" style="display: none;">
+      <h2>ゲーム終了！</h2>
+      <p id="final-score"></p>
+      <p id="final-message"></p>
+      <button id="restart-button">最初からやり直し</button>
+    </div>
+  </div>
+
+  <audio id="bgm" src="sounds/bgm.mp3" loop></audio>
+
+  <script src="script.js"></script>
+</body>
+</html>
