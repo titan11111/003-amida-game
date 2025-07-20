@@ -10,6 +10,9 @@ body {
   padding: 20px;
   box-sizing: border-box;
   overflow-y: auto;
+  /* スマホでのスクロールパフォーマンス改善 */
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
 }
 
 #game-container {
