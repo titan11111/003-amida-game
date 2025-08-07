@@ -48,6 +48,25 @@ const CHARACTER_VOICE_PATHS = [
     'sounds/miko.mp3'
 ];
 
+// キャラクターごとのストーリーと環境音
+const characterStories = {
+    ninja: {
+        name: '影丸',
+        text: '主君の娘がさらわれた。\n最後の手がかりが、この道の先にある。',
+        sound: 'sounds/wind.mp3',
+    },
+    samurai: {
+        name: '大吾',
+        text: '燃える家から、なにも守れなかった。\n夢に出る声が、“この道を選べ”と告げた。',
+        sound: 'sounds/fire.mp3',
+    },
+    girl: {
+        name: 'お春',
+        text: 'ひとりぼっちになってから、\nずっと誰かの声が夢で呼んでいた。',
+        sound: 'sounds/forest.mp3',
+    }
+};
+
 // ==== ゲーム設定 ====
 const GAME_CONFIG = {
     MAX_LEVELS: 10,
@@ -315,26 +334,39 @@ function selectCharacter(index) {
         console.log('キャラ声再生に失敗', e);
     });
 
-    // 音楽を開始
-    DOM.bgm.play().catch(() => {
-        console.log('BGM再生に失敗しました');
-    });
-
     gameState.selectedIndex = index;
     gameState.currentCol = index;
 
     // キャラクター選択の表示
     DOM.characters[index].classList.add('selected');
-    
+
     // 効果音
     sounds.click.play().catch(() => {});
 
-    // ゲーム開始
-    gameState.isPlaying = true;
-    gameState.currentX = gameState.charStartXs[index];
-    gameState.currentY = GAME_CONFIG.START_Y_OFFSET;
+    const typeKeys = ['ninja', 'samurai', 'girl'];
+    const story = characterStories[typeKeys[index]];
+    showStoryModal(story.name, story.text);
 
-    animateMove();
+    const envAudio = new Audio(story.sound);
+    envAudio.volume = 0.7;
+    envAudio.play().catch(() => {});
+
+    setTimeout(() => {
+        closeStoryModal();
+        envAudio.pause();
+        envAudio.currentTime = 0;
+
+        // BGMを開始
+        DOM.bgm.play().catch(() => {
+            console.log('BGM再生に失敗しました');
+        });
+
+        gameState.isPlaying = true;
+        gameState.currentX = gameState.charStartXs[index];
+        gameState.currentY = GAME_CONFIG.START_Y_OFFSET;
+
+        animateMove();
+    }, 4000);
 }
 
 function animateMove() {
@@ -519,6 +551,26 @@ function showGameOver() {
     }
     
     DOM.finalMessage.textContent = message;
+}
+
+// ストーリーモーダル表示
+function showStoryModal(name, text) {
+    const modal = document.createElement('div');
+    modal.className = 'story-modal';
+    modal.innerHTML = `
+        <div class="story-box">
+            <h2>${name}</h2>
+            <p>${text.replace(/\n/g, '<br>')}</p>
+        </div>
+    `;
+    document.body.appendChild(modal);
+}
+
+function closeStoryModal() {
+    const modal = document.querySelector('.story-modal');
+    if (modal) {
+        modal.remove();
+    }
 }
 
 // ==== イベントリスナー ====
