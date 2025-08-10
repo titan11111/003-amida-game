@@ -54,16 +54,22 @@ const characterStories = {
         name: '影丸',
         text: '主君の娘がさらわれた。\n最後の手がかりが、この道の先にある。',
         sound: 'sounds/wind.mp3',
+        treasureStreakText: '影丸は5つの宝を集め、手がかりは確かなものとなった。',
+        bombStreakText: '影丸は5度も罠にかかり、手がかりを見失いかけている。',
     },
     samurai: {
         name: '大吾',
         text: '燃える家から、なにも守れなかった。\n夢に出る声が、“この道を選べ”と告げた。',
         sound: 'sounds/fire.mp3',
+        treasureStreakText: '大吾は5度の勝利で名誉を取り戻しつつある。',
+        bombStreakText: '大吾は5度の失敗で心が折れそうだ。',
     },
     girl: {
         name: 'お春',
         text: 'ひとりぼっちになってから、\nずっと誰かの声が夢で呼んでいた。',
         sound: 'sounds/forest.mp3',
+        treasureStreakText: 'お春は5つの宝を手にし、光が未来を照らし始めた。',
+        bombStreakText: 'お春は5度の爆発に涙をこぼす。',
     }
 };
 
@@ -99,6 +105,8 @@ const gameState = {
     currentLevel: 1,
     currentScore: 0,
     remainingTurns: GAME_CONFIG.MAX_TURNS,
+    treasureStreak: 0,
+    bombStreak: 0,
     selectedIndex: -1,
     isPlaying: false,
     currentX: -1,
@@ -469,7 +477,7 @@ function showResult() {
     
     // 残り回数を減らす
     gameState.remainingTurns--;
-    
+
     // 結果表示
     DOM.resultArea.style.display = 'flex';
     DOM.resultImage.src = `images/${result}.png`;
@@ -495,7 +503,30 @@ function showResult() {
         DOM.scoreChange.className = 'negative';
         sounds.explosion.play().catch(() => {});
     }
-    
+
+    // ストリークの更新とストーリー表示
+    if (result === 'treasure') {
+        gameState.treasureStreak++;
+        gameState.bombStreak = 0;
+    } else {
+        gameState.bombStreak++;
+        gameState.treasureStreak = 0;
+    }
+
+    if (gameState.treasureStreak === 5 || gameState.bombStreak === 5) {
+        const typeKeys = ['ninja', 'samurai', 'girl'];
+        const charKey = typeKeys[gameState.selectedIndex];
+        const storyKey = gameState.treasureStreak === 5 ? 'treasureStreakText' : 'bombStreakText';
+        const storyName = characterStories[charKey].name;
+        const storyText = characterStories[charKey][storyKey];
+        setTimeout(() => {
+            showStoryModal(storyName, storyText);
+            setTimeout(closeStoryModal, 4000);
+        }, 500);
+        gameState.treasureStreak = 0;
+        gameState.bombStreak = 0;
+    }
+
     // ゲーム情報を更新
     updateGameInfo();
     
