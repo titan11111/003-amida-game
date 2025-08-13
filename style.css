@@ -91,10 +91,10 @@ h1 {
 }
 
 .character-icon {
-  width: 110px;
-  height: 110px;
+  width: 143px;
+  height: 143px;
   object-fit: cover;
-  margin: 0 18px;
+  margin: 0 24px;
   cursor: pointer;
   border: 5px solid transparent;
   border-radius: 50%;
@@ -365,9 +365,9 @@ h1 {
   }
 
   .character-icon {
-    width: 90px;
-    height: 90px;
-    margin: 0 12px;
+    width: 117px;
+    height: 117px;
+    margin: 0 16px;
   }
 
   #character-selection p {
@@ -403,9 +403,9 @@ h1 {
 
 @media (max-width: 480px) {
   .character-icon {
-    width: 75px;
-    height: 75px;
-    margin: 0 8px;
+    width: 98px;
+    height: 98px;
+    margin: 0 10px;
   }
 
   h1 {
