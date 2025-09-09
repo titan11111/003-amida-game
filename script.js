@@ -28,18 +28,41 @@ const DOM = {
 const ctx = DOM.amidakujiCanvas.getContext('2d');
 
 // ==== 音声 ====
-const sounds = {
-    click: new Audio('sounds/click.mp3'),
-    success: new Audio('sounds/success.mp3'),
-    explosion: new Audio('sounds/explosion.mp3'),
-    move: new Audio('sounds/move.mp3')
-};
+let audioCtx;
+const audioBuffers = {};
 
-// 音声の読み込み
-Object.values(sounds).forEach(sound => {
-    sound.load();
-    sound.volume = 0.5;
-});
+function initAudio() {
+    if (!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        const unlock = () => {
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+        };
+        document.addEventListener('touchstart', unlock, { once: true });
+        document.addEventListener('click', unlock, { once: true });
+    }
+}
+
+async function loadSound(url) {
+    const res = await fetch(url);
+    const buf = await res.arrayBuffer();
+    audioBuffers[url] = await audioCtx.decodeAudioData(buf);
+}
+
+function playSound(url, options = {}) {
+    if (!audioCtx) return;
+    const buffer = audioBuffers[url];
+    if (!buffer) return;
+    const source = audioCtx.createBufferSource();
+    source.buffer = buffer;
+    if (options.loop) source.loop = true;
+    const gainNode = audioCtx.createGain();
+    gainNode.gain.value = options.volume !== undefined ? options.volume : 0.5;
+    source.connect(gainNode).connect(audioCtx.destination);
+    source.start(0);
+    return source;
+}
 
 // キャラごとの声ファイル
 const CHARACTER_VOICE_PATHS = [
@@ -129,20 +152,32 @@ const assets = {
 };
 
 // ==== 初期化処理 ====
-function preloadAssets() {
+async function preloadAssets() {
     // キャラクター画像の読み込み
     DOM.characters.forEach((char, i) => {
         const img = new Image();
         img.src = char.src;
         assets.characterImages[i] = img;
     });
-    
+
     // ゴール画像の読み込み
     ['treasure', 'bomb'].forEach(type => {
         const img = new Image();
         img.src = `images/${type}.png`;
         assets.goalImages[type] = img;
     });
+
+    // 効果音やボイスの読み込み
+    initAudio();
+    const audioFiles = [
+        'sounds/click.mp3',
+        'sounds/success.mp3',
+        'sounds/explosion.mp3',
+        'sounds/move.mp3',
+        ...CHARACTER_VOICE_PATHS,
+        ...Object.values(characterStories).map(story => story.sound)
+    ];
+    await Promise.all(audioFiles.map(loadSound));
 }
 
 function initializeGame() {
@@ -336,11 +371,7 @@ function selectCharacter(index) {
     if (gameState.isPlaying || gameState.selectedIndex !== -1 || gameState.remainingTurns <= 0) return;
 
     // キャラごとの声を再生
-    const voice = new Audio(CHARACTER_VOICE_PATHS[index]);
-    voice.volume = 0.7;
-    voice.play().catch(e => {
-        console.log('キャラ声再生に失敗', e);
-    });
+    playSound(CHARACTER_VOICE_PATHS[index], { volume: 0.7 });
 
     gameState.selectedIndex = index;
     gameState.currentCol = index;
@@ -349,20 +380,16 @@ function selectCharacter(index) {
     DOM.characters[index].classList.add('selected');
 
     // 効果音
-    sounds.click.play().catch(() => {});
+    playSound('sounds/click.mp3');
 
     const typeKeys = ['ninja', 'samurai', 'girl'];
     const story = characterStories[typeKeys[index]];
     showStoryModal(story.name, story.text);
 
-    const envAudio = new Audio(story.sound);
-    envAudio.volume = 0.7;
-    envAudio.play().catch(() => {});
+    playSound(story.sound, { volume: 0.7 });
 
     setTimeout(() => {
         closeStoryModal();
-        envAudio.pause();
-        envAudio.currentTime = 0;
 
         // BGMを開始
         DOM.bgm.play().catch(() => {
@@ -386,9 +413,6 @@ function animateMove() {
     const goalY = DOM.amidakujiCanvas.height - GAME_CONFIG.GOAL_AREA_HEIGHT;
 
     if (gameState.currentY >= goalY) {
-        // ゴール到達時にMOVE効果音を停止
-        sounds.move.pause();
-        sounds.move.currentTime = 0;
         showResult();
         return;
     }
@@ -403,7 +427,7 @@ function animateMove() {
         const crossY = GAME_CONFIG.START_Y_OFFSET + (nextCross.row + 0.5) * GAME_CONFIG.CELL_HEIGHT;
         gameState.currentY = crossY;
             
-        sounds.move.play().catch(() => {});
+        playSound('sounds/move.mp3');
         
         gameState.isBouncing = true;
         gameState.bounceTimer = 0;
@@ -490,7 +514,7 @@ function showResult() {
         DOM.scoreChange.className = 'positive';
         
         DOM.fireworks.classList.add('show');
-        sounds.success.play().catch(() => {});
+        playSound('sounds/success.mp3');
         
         setTimeout(() => {
             DOM.fireworks.classList.remove('show');
@@ -501,7 +525,7 @@ function showResult() {
         DOM.resultMessage.className = 'failure';
         DOM.scoreChange.textContent = `${scoreChange}ポイント`;
         DOM.scoreChange.className = 'negative';
-        sounds.explosion.play().catch(() => {});
+        playSound('sounds/explosion.mp3');
     }
 
     // ストリークの更新とストーリー表示
@@ -628,8 +652,8 @@ DOM.restartButton.addEventListener('click', () => {
 });
 
 // ==== 起動処理 ====
-window.addEventListener('load', () => {
-    preloadAssets();
+window.addEventListener('load', async () => {
+    await preloadAssets();
     initializeGame();
 });
 
