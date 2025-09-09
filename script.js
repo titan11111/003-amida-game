@@ -628,14 +628,26 @@ function closeStoryModal() {
     }
 }
 
+function addTapListener(element, handler) {
+    element.addEventListener('click', handler);
+    element.addEventListener(
+        'touchstart',
+        e => {
+            e.preventDefault();
+            handler(e);
+        },
+        { passive: false }
+    );
+}
+
 // ==== イベントリスナー ====
 DOM.characters.forEach((char, i) => {
-    char.addEventListener('click', () => selectCharacter(i));
+    addTapListener(char, () => selectCharacter(i));
 });
 
-DOM.nextButton.addEventListener('click', nextLevel);
+addTapListener(DOM.nextButton, nextLevel);
 
-DOM.resetButton.addEventListener('click', () => {
+addTapListener(DOM.resetButton, () => {
     if (gameState.gameCompleted) {
         showGameOver();
     } else {
@@ -644,7 +656,7 @@ DOM.resetButton.addEventListener('click', () => {
     }
 });
 
-DOM.restartButton.addEventListener('click', () => {
+addTapListener(DOM.restartButton, () => {
     DOM.gameOverArea.style.display = 'none';
     DOM.characterSelection.style.display = 'block';
     DOM.amidakujiArea.style.display = 'block';
