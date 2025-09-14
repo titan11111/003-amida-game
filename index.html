@@ -3,62 +3,1220 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>あみだくじゲーム</title>
-  <link rel="stylesheet" href="style.css">
+  <title>あみだくじ大冒険</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Arial', sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      overflow-x: hidden;
+    }
+
+    #game-container {
+      background: white;
+      border-radius: 20px;
+      padding: 20px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+      max-width: 90vw;
+      width: 600px;
+      text-align: center;
+      position: relative;
+    }
+
+    h1 {
+      color: #4a5568;
+      margin-bottom: 20px;
+      font-size: 2em;
+      text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+    }
+
+    #game-info {
+      display: flex;
+      justify-content: space-around;
+      margin-bottom: 20px;
+      background: #f7fafc;
+      padding: 15px;
+      border-radius: 10px;
+      border: 2px solid #e2e8f0;
+    }
+
+    .info-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .info-label {
+      font-size: 12px;
+      color: #718096;
+      font-weight: bold;
+    }
+
+    .info-value {
+      font-size: 18px;
+      font-weight: bold;
+      color: #2d3748;
+      margin-top: 5px;
+    }
+
+    #story-area {
+      background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);
+      padding: 20px;
+      margin: 20px 0;
+      border-radius: 15px;
+      border: 3px solid #f56500;
+    }
+
+    .story-text {
+      font-size: 16px;
+      line-height: 1.6;
+      color: #2d3748;
+      margin-bottom: 15px;
+    }
+
+    #character-selection {
+      margin: 20px 0;
+      padding: 20px;
+      background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+      border-radius: 15px;
+      border: 3px solid #38b2ac;
+    }
+
+    .character-icon {
+      width: 80px;
+      height: 80px;
+      margin: 10px;
+      cursor: pointer;
+      border: 4px solid transparent;
+      border-radius: 50%;
+      transition: all 0.3s ease;
+      background: white;
+      padding: 10px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2em;
+    }
+
+    .character-icon:hover {
+      border-color: #4299e1;
+      transform: scale(1.1);
+      box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+    }
+
+    .character-icon.selected {
+      border-color: #f56500;
+      background: #fed7d7;
+      transform: scale(1.2);
+    }
+
+    #amidakuji-area {
+      margin: 20px 0;
+      position: relative;
+    }
+
+    #amidakujiCanvas {
+      border: 3px solid #4a5568;
+      border-radius: 10px;
+      background: white;
+      max-width: 100%;
+      cursor: pointer;
+    }
+
+    #result-area {
+      background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);
+      padding: 20px;
+      border-radius: 15px;
+      margin: 20px 0;
+      border: 3px solid #f56500;
+    }
+
+    #result-image {
+      width: 100px;
+      height: 100px;
+      border-radius: 50%;
+      margin: 10px auto;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 3em;
+      border: 4px solid white;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+      background: white;
+    }
+
+    #result-message {
+      font-size: 18px;
+      font-weight: bold;
+      margin: 15px 0;
+      color: #2d3748;
+    }
+
+    #score-change {
+      font-size: 16px;
+      font-weight: bold;
+      margin: 10px 0;
+    }
+
+    .positive {
+      color: #38a169;
+    }
+
+    .negative {
+      color: #e53e3e;
+    }
+
+    button {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      border: none;
+      padding: 12px 25px;
+      border-radius: 25px;
+      cursor: pointer;
+      font-size: 16px;
+      font-weight: bold;
+      margin: 10px;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+    }
+
+    button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 15px rgba(0,0,0,0.3);
+    }
+
+    button:active {
+      transform: translateY(0);
+    }
+
+    #game-over-area {
+      background: linear-gradient(135deg, #fc466b 0%, #3f5efb 100%);
+      color: white;
+      padding: 30px;
+      border-radius: 20px;
+      margin: 20px 0;
+    }
+
+    .firework {
+      position: fixed;
+      width: 50px;
+      height: 50px;
+      background: radial-gradient(circle, #ffd700, #ff6347);
+      border-radius: 50%;
+      animation: firework 1s ease-out forwards;
+      pointer-events: none;
+      z-index: 1000;
+    }
+
+    @keyframes firework {
+      0% {
+        transform: scale(0);
+        opacity: 1;
+      }
+      50% {
+        transform: scale(1.5);
+        opacity: 0.8;
+      }
+      100% {
+        transform: scale(3);
+        opacity: 0;
+      }
+    }
+
+    .particle {
+      position: fixed;
+      width: 4px;
+      height: 4px;
+      border-radius: 50%;
+      animation: particle 2s ease-out forwards;
+      pointer-events: none;
+      z-index: 1000;
+    }
+
+    @keyframes particle {
+      0% {
+        transform: translate(0, 0);
+        opacity: 1;
+      }
+      100% {
+        transform: translate(var(--dx), var(--dy));
+        opacity: 0;
+      }
+    }
+
+    #sound-controls {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+    }
+
+    #mute-button {
+      background: #4299e1;
+      color: white;
+      border: none;
+      padding: 8px 12px;
+      border-radius: 50%;
+      cursor: pointer;
+      font-size: 16px;
+      width: 40px;
+      height: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* レスポンシブ対応 */
+    @media (max-width: 600px) {
+      #game-container {
+        padding: 15px;
+        margin: 10px;
+        width: 95vw;
+      }
+
+      h1 {
+        font-size: 1.5em;
+      }
+
+      .character-icon {
+        width: 60px;
+        height: 60px;
+        margin: 5px;
+        font-size: 1.5em;
+      }
+
+      #game-info {
+        flex-direction: column;
+        gap: 10px;
+      }
+
+      .info-item {
+        flex-direction: row;
+        justify-content: space-between;
+      }
+
+      .story-text {
+        font-size: 14px;
+      }
+
+      #amidakujiCanvas {
+        width: 100%;
+        height: auto;
+      }
+
+      button {
+        font-size: 14px;
+        padding: 10px 20px;
+        margin: 5px;
+      }
+
+      #result-image {
+        width: 80px;
+        height: 80px;
+        font-size: 2em;
+      }
+    }
+  </style>
 </head>
 <body>
   <div id="game-container">
-    <h1>あみだくじゲーム</h1>
+    <div id="sound-controls">
+      <button id="mute-button" title="音声ON/OFF">🔊</button>
+    </div>
 
-    <!-- スコア・レベル表示エリア -->
+    <h1>🌟 あみだくじ大冒険 🌟</h1>
+
+    <!-- ゲーム情報表示エリア -->
     <div id="game-info">
       <div class="info-item">
-        <span class="info-label">レベル:</span>
-        <span id="current-level">1</span>
+        <span class="info-label">ステージ</span>
+        <span class="info-value" id="current-level">1</span>
       </div>
       <div class="info-item">
-        <span class="info-label">スコア:</span>
-        <span id="current-score">0</span>
+        <span class="info-label">スコア</span>
+        <span class="info-value" id="current-score">0</span>
       </div>
       <div class="info-item">
-        <span class="info-label">残り回数:</span>
-        <span id="remaining-turns">10</span>
+        <span class="info-label">残りライフ</span>
+        <span class="info-value" id="remaining-turns">❤️❤️❤️</span>
       </div>
     </div>
 
+    <!-- ストーリーエリア -->
+    <div id="story-area">
+      <div class="story-text" id="story-text">
+        🏰 魔法の王国で宝物を探す冒険が始まるよ！<br>
+        あみだくじを使って正しい道を選んで、宝物を見つけよう！
+      </div>
+    </div>
+
+    <!-- キャラクター選択エリア -->
     <div id="character-selection">
-      <p>キャラクターを選んでね！</p>
-      <img src="images/character1.png" alt="キャラクター1" id="char1" class="character-icon">
-      <img src="images/character2.png" alt="キャラクター2" id="char2" class="character-icon">
-      <img src="images/character3.png" alt="キャラクター3" id="char3" class="character-icon">
+      <p><strong>🧙‍♀️ 冒険者を選んでね！</strong></p>
+      <div class="character-icon" data-char="0">🧙‍♀️</div>
+      <div class="character-icon" data-char="1">🧙‍♂️</div>
+      <div class="character-icon" data-char="2">👸</div>
     </div>
 
+    <!-- あみだくじエリア -->
     <div id="amidakuji-area">
-      <canvas id="amidakujiCanvas"></canvas>
-      <div id="fireworks-container">
-        <img src="images/fireworks.png" alt="花火" id="fireworks" class="firework-animation">
-      </div>
+      <canvas id="amidakujiCanvas" width="500" height="500"></canvas>
     </div>
 
+    <!-- 結果表示エリア -->
     <div id="result-area" style="display: none;">
-      <img src="" alt="結果" id="result-image">
+      <div id="result-image">🎁</div>
       <p id="result-message"></p>
       <p id="score-change"></p>
-      <button id="next-button">次のレベルへ</button>
-      <button id="reset-button">もう一度遊ぶ</button>
+      <button id="next-button">次のステージへ 🚀</button>
+      <button id="reset-button">もう一度挑戦 🔄</button>
     </div>
 
     <!-- ゲーム終了画面 -->
     <div id="game-over-area" style="display: none;">
-      <h2>ゲーム終了！</h2>
+      <h2>🎉 冒険完了！ 🎉</h2>
       <p id="final-score"></p>
       <p id="final-message"></p>
-      <button id="restart-button">最初からやり直し</button>
+      <button id="restart-button">新しい冒険を始める 🌟</button>
     </div>
   </div>
 
-    <audio id="bgm" src="sounds/bgm.mp3" loop playsinline preload="auto"></audio>
+  <script>
+    // ゲーム状態管理
+    let gameState = {
+      level: 1,
+      score: 0,
+      lives: 3,
+      selectedCharacter: 0,
+      isGameActive: false,
+      isMuted: false,
+      bridges: []
+    };
 
-  <script src="script.js"></script>
+    // ステージごとの固定あみだくじパターン（ステージ1から6本、以降+3本）
+    const amidakujiPatterns = {
+      1: [
+        // ステージ1: 6本の横棒
+        { line1: 1, line2: 2, yPercent: 15 },
+        { line1: 3, line2: 4, yPercent: 25 },
+        { line1: 2, line2: 3, yPercent: 40 },
+        { line1: 1, line2: 2, yPercent: 55 },
+        { line1: 3, line2: 4, yPercent: 70 },
+        { line1: 2, line2: 3, yPercent: 85 }
+      ],
+      2: [
+        // ステージ2: 9本の横棒
+        { line1: 1, line2: 2, yPercent: 12 },
+        { line1: 3, line2: 4, yPercent: 12 },
+        { line1: 2, line2: 3, yPercent: 25 },
+        { line1: 1, line2: 2, yPercent: 38 },
+        { line1: 3, line2: 4, yPercent: 51 },
+        { line1: 2, line2: 3, yPercent: 64 },
+        { line1: 1, line2: 2, yPercent: 77 },
+        { line1: 3, line2: 4, yPercent: 90 },
+        { line1: 2, line2: 3, yPercent: 95 }
+      ],
+      3: [
+        // ステージ3: 12本の横棒
+        { line1: 1, line2: 2, yPercent: 10 },
+        { line1: 3, line2: 4, yPercent: 10 },
+        { line1: 2, line2: 3, yPercent: 20 },
+        { line1: 1, line2: 2, yPercent: 30 },
+        { line1: 3, line2: 4, yPercent: 40 },
+        { line1: 2, line2: 3, yPercent: 50 },
+        { line1: 1, line2: 2, yPercent: 60 },
+        { line1: 3, line2: 4, yPercent: 70 },
+        { line1: 2, line2: 3, yPercent: 80 },
+        { line1: 1, line2: 2, yPercent: 87 },
+        { line1: 3, line2: 4, yPercent: 94 },
+        { line1: 2, line2: 3, yPercent: 98 }
+      ],
+      4: [
+        // ステージ4: 15本の横棒
+        { line1: 1, line2: 2, yPercent: 8 },
+        { line1: 3, line2: 4, yPercent: 8 },
+        { line1: 2, line2: 3, yPercent: 16 },
+        { line1: 1, line2: 2, yPercent: 24 },
+        { line1: 3, line2: 4, yPercent: 32 },
+        { line1: 2, line2: 3, yPercent: 40 },
+        { line1: 1, line2: 2, yPercent: 48 },
+        { line1: 3, line2: 4, yPercent: 56 },
+        { line1: 2, line2: 3, yPercent: 64 },
+        { line1: 1, line2: 2, yPercent: 72 },
+        { line1: 3, line2: 4, yPercent: 80 },
+        { line1: 2, line2: 3, yPercent: 85 },
+        { line1: 1, line2: 2, yPercent: 90 },
+        { line1: 3, line2: 4, yPercent: 95 },
+        { line1: 2, line2: 3, yPercent: 98 }
+      ],
+      5: [
+        // ステージ5: 18本の横棒
+        { line1: 1, line2: 2, yPercent: 7 },
+        { line1: 3, line2: 4, yPercent: 7 },
+        { line1: 2, line2: 3, yPercent: 14 },
+        { line1: 1, line2: 2, yPercent: 21 },
+        { line1: 3, line2: 4, yPercent: 28 },
+        { line1: 2, line2: 3, yPercent: 35 },
+        { line1: 1, line2: 2, yPercent: 42 },
+        { line1: 3, line2: 4, yPercent: 49 },
+        { line1: 2, line2: 3, yPercent: 56 },
+        { line1: 1, line2: 2, yPercent: 63 },
+        { line1: 3, line2: 4, yPercent: 70 },
+        { line1: 2, line2: 3, yPercent: 77 },
+        { line1: 1, line2: 2, yPercent: 82 },
+        { line1: 3, line2: 4, yPercent: 87 },
+        { line1: 2, line2: 3, yPercent: 92 },
+        { line1: 1, line2: 2, yPercent: 95 },
+        { line1: 3, line2: 4, yPercent: 97 },
+        { line1: 2, line2: 3, yPercent: 99 }
+      ]
+    };
+
+    // ストーリーデータ
+    const storyData = {
+      1: {
+        text: "🏰 魔法の王国で宝物を探す冒険が始まるよ！あみだくじを正しく辿って宝物を見つけよう！",
+        rewards: ["💎 ダイヤモンド", "👑 王冠"],
+        traps: ["🕷️ クモの巣", "💀 毒キノコ"]
+      },
+      2: {
+        text: "🌊 海の神殿に到着！海賊の宝が隠されているよ。横棒を正しく渡って宝を手に入れよう！",
+        rewards: ["🏴‍☠️ 海賊の宝", "🦜 おしゃべりオウム"],
+        traps: ["🦈 サメの群れ", "👻 幽霊船"]
+      },
+      3: {
+        text: "🏔️ 雲の上の天空城！複雑な道のりだけど、横棒を辿れば天使の祝福が待っている！",
+        rewards: ["👼 天使の羽", "⭐ 星のかけら"],
+        traps: ["⚡ 雷雲", "❄️ 氷の牢獄"]
+      },
+      4: {
+        text: "🌋 火山の洞窟！さらに複雑になった道！ドラゴンの宝物庫へ続く正しい道を見つけよう！",
+        rewards: ["🐉 ドラゴンの卵", "💍 火の指輪"],
+        traps: ["🌋 溶岩の流れ", "🔥 炎の罠"]
+      },
+      5: {
+        text: "🌌 宇宙の果て！最も複雑な最終試練！横棒の迷宮を抜けて宇宙の秘宝を手に入れよう！",
+        rewards: ["🌟 宇宙の石", "👑 星の王冠"],
+        traps: ["🕳️ ブラックホール", "☄️ 隕石の雨"]
+      }
+    };
+
+    // DOM要素の取得
+    const canvas = document.getElementById('amidakujiCanvas');
+    const ctx = canvas.getContext('2d');
+    const characterIcons = document.querySelectorAll('.character-icon');
+    const storyText = document.getElementById('story-text');
+    const resultArea = document.getElementById('result-area');
+    const gameOverArea = document.getElementById('game-over-area');
+    const muteButton = document.getElementById('mute-button');
+
+    // 音声管理クラス
+    class SoundManager {
+      constructor() {
+        this.audioContext = null;
+        this.sounds = {};
+        this.initAudio();
+      }
+
+      async initAudio() {
+        try {
+          this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        } catch (e) {
+          console.log('音声コンテキストの初期化に失敗しました');
+        }
+      }
+
+      // 8ビット風音声の生成
+      createBeep(frequency, duration, volume = 0.1) {
+        if (!this.audioContext || gameState.isMuted) return;
+
+        const oscillator = this.audioContext.createOscillator();
+        const gainNode = this.audioContext.createGain();
+
+        oscillator.connect(gainNode);
+        gainNode.connect(this.audioContext.destination);
+
+        oscillator.frequency.setValueAtTime(frequency, this.audioContext.currentTime);
+        oscillator.type = 'square';
+
+        gainNode.gain.setValueAtTime(0, this.audioContext.currentTime);
+        gainNode.gain.linearRampToValueAtTime(volume, this.audioContext.currentTime + 0.01);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, this.audioContext.currentTime + duration - 0.01);
+        gainNode.gain.linearRampToValueAtTime(0, this.audioContext.currentTime + duration);
+
+        oscillator.start(this.audioContext.currentTime);
+        oscillator.stop(this.audioContext.currentTime + duration);
+      }
+
+      // 効果音メソッド
+      playClick() {
+        this.createBeep(800, 0.1, 0.05);
+      }
+
+      playSuccess() {
+        this.createBeep(523, 0.2, 0.1);
+        setTimeout(() => this.createBeep(659, 0.2, 0.1), 200);
+        setTimeout(() => this.createBeep(784, 0.3, 0.1), 400);
+      }
+
+      playFailure() {
+        this.createBeep(300, 0.3, 0.1);
+        setTimeout(() => this.createBeep(250, 0.3, 0.1), 300);
+        setTimeout(() => this.createBeep(200, 0.5, 0.1), 600);
+      }
+
+      playLevelUp() {
+        const notes = [523, 659, 784, 1047];
+        notes.forEach((note, i) => {
+          setTimeout(() => this.createBeep(note, 0.15, 0.08), i * 100);
+        });
+      }
+
+      playMove() {
+        this.createBeep(440, 0.05, 0.03);
+      }
+
+      async resumeAudio() {
+        if (this.audioContext && this.audioContext.state === 'suspended') {
+          await this.audioContext.resume();
+        }
+      }
+    }
+
+    const soundManager = new SoundManager();
+
+    // キャラクター選択処理
+    characterIcons.forEach((icon, index) => {
+      icon.addEventListener('click', async () => {
+        await soundManager.resumeAudio();
+        soundManager.playClick();
+        
+        characterIcons.forEach(i => i.classList.remove('selected'));
+        icon.classList.add('selected');
+        gameState.selectedCharacter = index;
+        
+        if (!gameState.isGameActive) {
+          startGame();
+        }
+      });
+    });
+
+    // ミュートボタン処理
+    muteButton.addEventListener('click', async () => {
+      await soundManager.resumeAudio();
+      gameState.isMuted = !gameState.isMuted;
+      muteButton.textContent = gameState.isMuted ? '🔇' : '🔊';
+      if (!gameState.isMuted) {
+        soundManager.playClick();
+      }
+    });
+
+    // あみだくじの描画
+    function drawAmidakuji() {
+      const width = canvas.width;
+      const height = canvas.height;
+      const lines = 4;
+      const spacing = width / (lines + 1);
+      const topMargin = 60;
+      const bottomMargin = 80;
+      const drawHeight = height - topMargin - bottomMargin;
+
+      // キャンバスクリア
+      ctx.clearRect(0, 0, width, height);
+
+      // 背景グラデーション
+      const gradient = ctx.createLinearGradient(0, 0, 0, height);
+      gradient.addColorStop(0, '#f0f9ff');
+      gradient.addColorStop(1, '#e0e7ff');
+      ctx.fillStyle = gradient;
+      ctx.fillRect(0, 0, width, height);
+
+      // 縦線を描画
+      ctx.strokeStyle = '#4a5568';
+      ctx.lineWidth = 5;
+      for (let i = 1; i <= lines; i++) {
+        const x = spacing * i;
+        ctx.beginPath();
+        ctx.moveTo(x, topMargin);
+        ctx.lineTo(x, height - bottomMargin);
+        ctx.stroke();
+      }
+
+      // スタート地点を描画
+      for (let i = 1; i <= lines; i++) {
+        const x = spacing * i;
+        
+        // スタートボックス
+        ctx.fillStyle = '#667eea';
+        ctx.fillRect(x - 35, 5, 70, 40);
+        
+        // スタートテキスト
+        ctx.fillStyle = 'white';
+        ctx.font = 'bold 16px Arial';
+        ctx.textAlign = 'center';
+        ctx.fillText(`START`, x, 22);
+        ctx.fillText(`${i}`, x, 38);
+      }
+
+      // ゴール地点を描画
+      const currentStory = storyData[Math.min(gameState.level, 5)];
+      const rewards = currentStory.rewards;
+      const traps = currentStory.traps;
+      const goalItems = [...rewards, ...traps];
+      
+      for (let i = 1; i <= lines; i++) {
+        const x = spacing * i;
+        const isReward = i <= rewards.length;
+        
+        // ゴールボックス
+        ctx.fillStyle = isReward ? '#48bb78' : '#f56565';
+        ctx.fillRect(x - 45, height - 60, 90, 50);
+        
+        // ゴールテキスト
+        ctx.fillStyle = 'white';
+        ctx.font = 'bold 12px Arial';
+        ctx.textAlign = 'center';
+        
+        const item = goalItems[i - 1] || '？';
+        const shortItem = item.length > 12 ? item.substring(0, 10) + '...' : item;
+        ctx.fillText(shortItem, x, height - 30);
+      }
+
+      // 固定パターンで横線（橋）を描画
+      const currentPattern = amidakujiPatterns[Math.min(gameState.level, 5)];
+      gameState.bridges = [];
+      
+      currentPattern.forEach(bridge => {
+        const x1 = spacing * bridge.line1;
+        const x2 = spacing * bridge.line2;
+        const y = topMargin + (drawHeight * bridge.yPercent / 100);
+        
+        // 橋を描画（太めで安定した線）
+        ctx.strokeStyle = '#e53e3e';
+        ctx.lineWidth = 8;
+        ctx.beginPath();
+        ctx.moveTo(x1, y);
+        ctx.lineTo(x2, y);
+        ctx.stroke();
+        
+        // 橋の端点を描画（円形の装飾）
+        ctx.fillStyle = '#c53030';
+        ctx.beginPath();
+        ctx.arc(x1, y, 6, 0, 2 * Math.PI);
+        ctx.fill();
+        ctx.beginPath();
+        ctx.arc(x2, y, 6, 0, 2 * Math.PI);
+        ctx.fill();
+        
+        gameState.bridges.push({ line1: bridge.line1, line2: bridge.line2, y: y });
+      });
+
+      // クリック処理を設定
+      canvas.onclick = handleCanvasClick;
+    }
+
+    // ステージ別背景描画
+    function drawStageBackground(width, height) {
+      const level = Math.min(gameState.level, 5);
+      
+      switch(level) {
+        case 1: // 魔法の王国 - 城の背景
+          const castleGradient = ctx.createLinearGradient(0, 0, 0, height);
+          castleGradient.addColorStop(0, '#fef7cd'); // 薄い金色
+          castleGradient.addColorStop(0.3, '#fed7aa'); // オレンジ
+          castleGradient.addColorStop(1, '#c084fc'); // 紫
+          ctx.fillStyle = castleGradient;
+          ctx.fillRect(0, 0, width, height);
+          
+          // 雲の装飾
+          ctx.fillStyle = 'rgba(255, 255, 255, 0.3)';
+          for(let i = 0; i < 5; i++) {
+            const x = (width / 5) * i + 20;
+            const y = 50 + Math.sin(i) * 20;
+            drawCloud(x, y, 30);
+          }
+          break;
+          
+        case 2: // 海の神殿 - 海底背景
+          const oceanGradient = ctx.createLinearGradient(0, 0, 0, height);
+          oceanGradient.addColorStop(0, '#0ea5e9'); // 明るい青
+          oceanGradient.addColorStop(0.5, '#0284c7'); // 海の青
+          oceanGradient.addColorStop(1, '#0f172a'); // 深海の暗青
+          ctx.fillStyle = oceanGradient;
+          ctx.fillRect(0, 0, width, height);
+          
+          // 泡の装飾
+          ctx.fillStyle = 'rgba(255, 255, 255, 0.4)';
+          for(let i = 0; i < 8; i++) {
+            const x = Math.random() * width;
+            const y = Math.random() * height;
+            const size = 3 + Math.random() * 8;
+            ctx.beginPath();
+            ctx.arc(x, y, size, 0, 2 * Math.PI);
+            ctx.fill();
+          }
+          
+          // 海藻の装飾
+          ctx.strokeStyle = 'rgba(34, 197, 94, 0.6)';
+          ctx.lineWidth = 4;
+          for(let i = 0; i < 3; i++) {
+            const x = 50 + i * 150;
+            drawSeaweed(x, height - 80);
+          }
+          break;
+          
+        case 3: // 天空城 - 雲と空の背景
+          const skyGradient = ctx.createLinearGradient(0, 0, 0, height);
+          skyGradient.addColorStop(0, '#f0f9ff'); // 薄い空色
+          skyGradient.addColorStop(0.3, '#7dd3fc'); // 明るい空色
+          skyGradient.addColorStop(0.7, '#38bdf8'); // 青空
+          skyGradient.addColorStop(1, '#0284c7'); // 深い青
+          ctx.fillStyle = skyGradient;
+          ctx.fillRect(0, 0, width, height);
+          
+          // 大きな雲の装飾
+          ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+          for(let i = 0; i < 4; i++) {
+            const x = (width / 4) * i + 30;
+            const y = 100 + i * 80;
+            drawCloud(x, y, 50 + i * 10);
+          }
+          
+          // 星の装飾
+          ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
+          for(let i = 0; i < 6; i++) {
+            const x = 80 + i * 70;
+            const y = 40 + Math.sin(i * 2) * 30;
+            drawStar(x, y, 8);
+          }
+          break;
+          
+        case 4: // 火山の洞窟 - 溶岩と炎の背景
+          const volcanoGradient = ctx.createLinearGradient(0, 0, 0, height);
+          volcanoGradient.addColorStop(0, '#451a03'); // 暗茶色
+          volcanoGradient.addColorStop(0.3, '#7c2d12'); // 茶色
+          volcanoGradient.addColorStop(0.7, '#dc2626'); // 赤
+          volcanoGradient.addColorStop(1, '#ff6b35'); // オレンジ
+          ctx.fillStyle = volcanoGradient;
+          ctx.fillRect(0, 0, width, height);
+          
+          // 溶岩の装飾
+          ctx.fillStyle = 'rgba(255, 107, 53, 0.7)';
+          for(let i = 0; i < 5; i++) {
+            const x = i * 100 + 25;
+            const y = height - 60 + Math.sin(i * 3) * 10;
+            ctx.beginPath();
+            ctx.ellipse(x, y, 30, 8, 0, 0, 2 * Math.PI);
+            ctx.fill();
+          }
+          
+          // 火花の装飾
+          ctx.fillStyle = 'rgba(255, 193, 7, 0.8)';
+          for(let i = 0; i < 10; i++) {
+            const x = Math.random() * width;
+            const y = Math.random() * (height * 0.7);
+            const size = 2 + Math.random() * 4;
+            ctx.beginPath();
+            ctx.arc(x, y, size, 0, 2 * Math.PI);
+            ctx.fill();
+          }
+          break;
+          
+        case 5: // 宇宙 - 星空と銀河の背景
+          const spaceGradient = ctx.createLinearGradient(0, 0, 0, height);
+          spaceGradient.addColorStop(0, '#0f0f23'); // 深い紫
+          spaceGradient.addColorStop(0.3, '#1e1b4b'); // 濃い青紫
+          spaceGradient.addColorStop(0.7, '#312e81'); // 青紫
+          spaceGradient.addColorStop(1, '#1e40af'); // 青
+          ctx.fillStyle = spaceGradient;
+          ctx.fillRect(0, 0, width, height);
+          
+          // 星の装飾
+          ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
+          for(let i = 0; i < 20; i++) {
+            const x = Math.random() * width;
+            const y = Math.random() * height;
+            const size = 1 + Math.random() * 3;
+            if(Math.random() > 0.7) {
+              drawStar(x, y, size * 2);
+            } else {
+              ctx.beginPath();
+              ctx.arc(x, y, size, 0, 2 * Math.PI);
+              ctx.fill();
+            }
+          }
+          
+          // 銀河の装飾
+          ctx.fillStyle = 'rgba(147, 51, 234, 0.4)';
+          ctx.beginPath();
+          ctx.ellipse(width/2, height/3, width*0.3, height*0.1, Math.PI/6, 0, 2 * Math.PI);
+          ctx.fill();
+          break;
+        
+        default:
+          // デフォルト背景（念のため）
+          const defaultGradient = ctx.createLinearGradient(0, 0, 0, height);
+          defaultGradient.addColorStop(0, '#f0f9ff');
+          defaultGradient.addColorStop(1, '#e0e7ff');
+          ctx.fillStyle = defaultGradient;
+          ctx.fillRect(0, 0, width, height);
+          break;
+      }
+    }
+
+    // ステージ別装飾
+    function drawStageDecorations(width, height) {
+      const level = Math.min(gameState.level, 5);
+      
+      // ステージ番号表示
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+      ctx.font = 'bold 24px Arial';
+      ctx.textAlign = 'left';
+      ctx.fillText(`STAGE ${level}`, 10, 35);
+      
+      // ステージ名表示
+      const stageNames = {
+        1: '🏰 魔法の王国',
+        2: '🌊 海の神殿', 
+        3: '🏔️ 天空城',
+        4: '🌋 火山の洞窟',
+        5: '🌌 宇宙の果て'
+      };
+      
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.7)';
+      ctx.font = 'bold 16px Arial';
+      ctx.fillText(stageNames[level], 10, 55);
+    }
+
+    // 雲の描画ヘルパー関数
+    function drawCloud(x, y, size) {
+      ctx.beginPath();
+      ctx.arc(x, y, size, 0, 2 * Math.PI);
+      ctx.arc(x + size * 0.6, y, size * 0.8, 0, 2 * Math.PI);
+      ctx.arc(x + size * 1.2, y, size * 0.6, 0, 2 * Math.PI);
+      ctx.arc(x + size * 0.3, y - size * 0.5, size * 0.7, 0, 2 * Math.PI);
+      ctx.arc(x + size * 0.9, y - size * 0.3, size * 0.5, 0, 2 * Math.PI);
+      ctx.fill();
+    }
+
+    // 星の描画ヘルパー関数
+    function drawStar(x, y, size) {
+      const spikes = 5;
+      const step = Math.PI / spikes;
+      let rotation = Math.PI / 2 * 3;
+      let cx = x, cy = y;
+      
+      ctx.beginPath();
+      ctx.moveTo(cx, cy - size);
+      
+      for(let i = 0; i < spikes; i++) {
+        cx = x + Math.cos(rotation) * size;
+        cy = y + Math.sin(rotation) * size;
+        ctx.lineTo(cx, cy);
+        rotation += step;
+        
+        cx = x + Math.cos(rotation) * (size * 0.5);
+        cy = y + Math.sin(rotation) * (size * 0.5);
+        ctx.lineTo(cx, cy);
+        rotation += step;
+      }
+      
+      ctx.lineTo(x, y - size);
+      ctx.closePath();
+      ctx.fill();
+    }
+
+    // 海藻の描画ヘルパー関数
+    function drawSeaweed(x, startY) {
+      ctx.beginPath();
+      ctx.moveTo(x, startY);
+      
+      for(let i = 0; i < 5; i++) {
+        const offsetX = Math.sin(i * 0.5) * 15;
+        const y = startY - i * 20;
+        ctx.quadraticCurveTo(x + offsetX, y - 10, x + offsetX * 0.5, y);
+      }
+      
+      ctx.stroke();
+    }
+
+    // キャンバスクリック処理
+    function handleCanvasClick(e) {
+      const rect = canvas.getBoundingClientRect();
+      const scaleX = canvas.width / rect.width;
+      const scaleY = canvas.height / rect.height;
+      
+      const clickX = (e.clientX - rect.left) * scaleX;
+      const clickY = (e.clientY - rect.top) * scaleY;
+      
+      const spacing = canvas.width / 5;
+      
+      // スタート地点のクリック判定
+      for (let j = 1; j <= 4; j++) {
+        const startX = spacing * j;
+        if (Math.abs(clickX - startX) < 45 && clickY < 60) {
+          followPath(j);
+          break;
+        }
+      }
+    }
+
+    // パスを辿るアニメーション（正しいあみだくじルール）
+    function followPath(startLine) {
+      soundManager.resumeAudio();
+      soundManager.playClick();
+      
+      let currentLine = startLine;
+      const width = canvas.width;
+      const height = canvas.height;
+      const spacing = width / 5;
+      let y = 60;
+      
+      // キャンバスクリックを無効化
+      canvas.onclick = null;
+      
+      const animateStep = () => {
+        // あみだくじを再描画
+        drawAmidakuji();
+        
+        // 現在位置を描画
+        const x = spacing * currentLine;
+        
+        // 影を描画
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
+        ctx.beginPath();
+        ctx.arc(x + 3, y + 3, 15, 0, 2 * Math.PI);
+        ctx.fill();
+        
+        // メインの円を描画
+        ctx.fillStyle = '#f56500';
+        ctx.strokeStyle = '#d69e2e';
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.arc(x, y, 12, 0, 2 * Math.PI);
+        ctx.fill();
+        ctx.stroke();
+        
+        // キャラクターを描画
+        ctx.font = '28px Arial';
+        ctx.textAlign = 'center';
+        const characters = ['🧙‍♀️', '🧙‍♂️', '👸'];
+        ctx.fillText(characters[gameState.selectedCharacter], x, y + 10);
+        
+        // あみだくじルール：横棒に遭遇したら必ず横に移動
+        gameState.bridges.forEach(bridge => {
+          if (Math.abs(y - bridge.y) < 8) {
+            if (currentLine === bridge.line1) {
+              currentLine = bridge.line2;
+              soundManager.playMove();
+            } else if (currentLine === bridge.line2) {
+              currentLine = bridge.line1;
+              soundManager.playMove();
+            }
+          }
+        });
+        
+        y += 1.8; // アニメーション速度（元の3から1.8に変更 = 60%）
+        
+        if (y < height - 80) {
+          requestAnimationFrame(animateStep);
+        } else {
+          showResult(currentLine);
+        }
+      };
+      
+      animateStep();
+    }
+
+    // 結果表示
+    function showResult(goalLine) {
+      const currentStory = storyData[Math.min(gameState.level, 5)];
+      const rewards = currentStory.rewards;
+      const isReward = goalLine <= rewards.length;
+      
+      let message, scoreChange, emoji;
+      
+      if (isReward) {
+        const rewardItem = rewards[goalLine - 1];
+        message = `🎉 おめでとう！${rewardItem}を見つけたよ！`;
+        scoreChange = 100 * gameState.level;
+        gameState.score += scoreChange;
+        emoji = '🎁';
+        soundManager.playSuccess();
+        createFireworks();
+      } else {
+        const trapItem = currentStory.traps[goalLine - rewards.length - 1];
+        message = `😅 あらら...${trapItem}にひっかかっちゃった！`;
+        scoreChange = -50;
+        gameState.score = Math.max(0, gameState.score + scoreChange);
+        gameState.lives--;
+        emoji = '💀';
+        soundManager.playFailure();
+      }
+      
+      // 結果表示
+      document.getElementById('result-image').textContent = emoji;
+      document.getElementById('result-message').textContent = message;
+      document.getElementById('score-change').textContent = 
+        scoreChange > 0 ? `+${scoreChange}ポイント！` : `${scoreChange}ポイント...`;
+      document.getElementById('score-change').className = scoreChange > 0 ? 'positive' : 'negative';
+      
+      updateDisplay();
+      resultArea.style.display = 'block';
+      
+      // ゲーム終了チェック
+      if (gameState.lives <= 0) {
+        setTimeout(showGameOver, 2000);
+      }
+    }
+
+    // 花火エフェクト
+    function createFireworks() {
+      for (let i = 0; i < 5; i++) {
+        setTimeout(() => {
+          const firework = document.createElement('div');
+          firework.className = 'firework';
+          firework.style.left = Math.random() * window.innerWidth + 'px';
+          firework.style.top = Math.random() * window.innerHeight + 'px';
+          document.body.appendChild(firework);
+          
+          // パーティクル追加
+          for (let j = 0; j < 8; j++) {
+            const particle = document.createElement('div');
+            particle.className = 'particle';
+            particle.style.left = firework.style.left;
+            particle.style.top = firework.style.top;
+            particle.style.background = `hsl(${Math.random() * 360}, 100%, 60%)`;
+            
+            const angle = (j / 8) * 2 * Math.PI;
+            const distance = 100;
+            particle.style.setProperty('--dx', Math.cos(angle) * distance + 'px');
+            particle.style.setProperty('--dy', Math.sin(angle) * distance + 'px');
+            
+            document.body.appendChild(particle);
+            
+            setTimeout(() => particle.remove(), 2000);
+          }
+          
+          setTimeout(() => firework.remove(), 1000);
+        }, i * 200);
+      }
+    }
+
+    // 表示更新
+    function updateDisplay() {
+      document.getElementById('current-level').textContent = gameState.level;
+      document.getElementById('current-score').textContent = gameState.score;
+      
+      let heartsDisplay = '';
+      for (let i = 0; i < gameState.lives; i++) {
+        heartsDisplay += '❤️';
+      }
+      for (let i = gameState.lives; i < 3; i++) {
+        heartsDisplay += '🖤';
+      }
+      document.getElementById('remaining-turns').textContent = heartsDisplay;
+      
+      // ストーリーテキスト更新
+      const currentStory = storyData[Math.min(gameState.level, 5)];
+      storyText.textContent = currentStory.text;
+    }
+
+    // ゲーム開始
+    function startGame() {
+      gameState.isGameActive = true;
+      resultArea.style.display = 'none';
+      gameOverArea.style.display = 'none';
+      drawAmidakuji();
+      updateDisplay();
+    }
+
+    // 次のレベル
+    document.getElementById('next-button').addEventListener('click', () => {
+      soundManager.playClick();
+      gameState.level++;
+      if (gameState.level > 5) {
+        // 全レベルクリア
+        showGameOver(true);
+      } else {
+        soundManager.playLevelUp();
+        startGame();
+      }
+    });
+
+    // リセット
+    document.getElementById('reset-button').addEventListener('click', () => {
+      soundManager.playClick();
+      startGame();
+    });
+
+    // ゲーム終了画面
+    function showGameOver(isComplete = false) {
+      let message;
+      if (isComplete) {
+        message = '🏆 すべての冒険をクリア！君は真の冒険者だ！宇宙の秘密をすべて解き明かした！';
+        soundManager.playLevelUp();
+      } else {
+        message = '💔 冒険はここまで...でも君なら必ずクリアできるよ！再挑戦してみよう！';
+      }
+      
+      document.getElementById('final-score').textContent = `最終スコア: ${gameState.score}点`;
+      document.getElementById('final-message').textContent = message;
+      gameOverArea.style.display = 'block';
+      resultArea.style.display = 'none';
+    }
+
+    // リスタート
+    document.getElementById('restart-button').addEventListener('click', () => {
+      soundManager.playClick();
+      gameState = {
+        level: 1,
+        score: 0,
+        lives: 3,
+        selectedCharacter: gameState.selectedCharacter,
+        isGameActive: false,
+        isMuted: gameState.isMuted,
+        bridges: []
+      };
+      gameOverArea.style.display = 'none';
+      updateDisplay();
+      drawAmidakuji();
+    });
+
+    // 初期化
+    drawAmidakuji();
+    updateDisplay();
+
+    // タッチデバイス対応
+    if ('ontouchstart' in window) {
+      canvas.addEventListener('touchstart', (e) => {
+        e.preventDefault();
+        const touch = e.touches[0];
+        const rect = canvas.getBoundingClientRect();
+        const scaleX = canvas.width / rect.width;
+        const scaleY = canvas.height / rect.height;
+        
+        const clickX = (touch.clientX - rect.left) * scaleX;
+        const clickY = (touch.clientY - rect.top) * scaleY;
+        
+        const spacing = canvas.width / 5;
+        for (let j = 1; j <= 4; j++) {
+          const startX = spacing * j;
+          if (Math.abs(clickX - startX) < 45 && clickY < 60) {
+            followPath(j);
+            break;
+          }
+        }
+      });
+    }
+  </script>
 </body>
 </html>
