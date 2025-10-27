@@ -334,7 +334,6 @@
 
     <h1>🌟 あみだくじ大冒険 🌟</h1>
 
-    <!-- ゲーム情報表示エリア -->
     <div id="game-info">
       <div class="info-item">
         <span class="info-label">ステージ</span>
@@ -350,7 +349,6 @@
       </div>
     </div>
 
-    <!-- ストーリーエリア -->
     <div id="story-area">
       <div class="story-text" id="story-text">
         🏰 魔法の王国で宝物を探す冒険が始まるよ！<br>
@@ -358,7 +356,6 @@
       </div>
     </div>
 
-    <!-- キャラクター選択エリア -->
     <div id="character-selection">
       <p><strong>🧙‍♀️ 冒険者を選んでね！</strong></p>
       <div class="character-icon" data-char="0">🧙‍♀️</div>
@@ -366,12 +363,10 @@
       <div class="character-icon" data-char="2">👸</div>
     </div>
 
-    <!-- あみだくじエリア -->
     <div id="amidakuji-area">
       <canvas id="amidakujiCanvas" width="500" height="500"></canvas>
     </div>
 
-    <!-- 結果表示エリア -->
     <div id="result-area" style="display: none;">
       <div id="result-image">🎁</div>
       <p id="result-message"></p>
@@ -380,7 +375,6 @@
       <button id="reset-button">もう一度挑戦 🔄</button>
     </div>
 
-    <!-- ゲーム終了画面 -->
     <div id="game-over-area" style="display: none;">
       <h2>🎉 冒険完了！ 🎉</h2>
       <p id="final-score"></p>
@@ -638,6 +632,9 @@
       gradient.addColorStop(1, '#e0e7ff');
       ctx.fillStyle = gradient;
       ctx.fillRect(0, 0, width, height);
+      
+      // ステージ別背景描画
+      drawStageBackground(width, height);
 
       // 縦線を描画
       ctx.strokeStyle = '#4a5568';
@@ -649,6 +646,9 @@
         ctx.lineTo(x, height - bottomMargin);
         ctx.stroke();
       }
+      
+      // ステージ別装飾 (縦線の上に描画)
+      drawStageDecorations(width, height);
 
       // スタート地点を描画
       for (let i = 1; i <= lines; i++) {
@@ -979,17 +979,73 @@
       const height = canvas.height;
       const spacing = width / 5;
       let y = 60;
+      const stepSize = 1.8; // アニメーション速度（元の3から1.8に変更 = 60%）
+      const bridgeHitRange = stepSize * 0.5; // 横棒との衝突判定範囲
       
       // キャンバスクリックを無効化
       canvas.onclick = null;
+      
+      // 橋をy座標で昇順にソート
+      const sortedBridges = gameState.bridges.sort((a, b) => a.y - b.y);
+      let nextBridgeIndex = 0;
       
       const animateStep = () => {
         // あみだくじを再描画
         drawAmidakuji();
         
-        // 現在位置を描画
-        const x = spacing * currentLine;
+        let movedHorizontally = false;
         
+        // あみだくじルール：横棒に遭遇したら必ず横に移動
+        for (let i = nextBridgeIndex; i < sortedBridges.length; i++) {
+            const bridge = sortedBridges[i];
+            
+            // 現在の縦線と横棒のy座標が近く、かつ、まだその横棒を通過していない場合
+            // y < bridge.y は横棒を完全に超えていないことを確認
+            if (y + stepSize >= bridge.y && y < bridge.y && 
+                (currentLine === bridge.line1 || currentLine === bridge.line2)) {
+                
+                // 横移動処理
+                const targetLine = currentLine === bridge.line1 ? bridge.line2 : bridge.line1;
+                
+                // yを横棒のY座標に設定（正確な横移動の始点）
+                y = bridge.y; 
+                
+                // キャラクターの描画（横移動の瞬間を見せるために一時的に描画）
+                drawCharacter(spacing * currentLine, y);
+                
+                // 横移動後の線に切り替える
+                currentLine = targetLine;
+                soundManager.playMove();
+                movedHorizontally = true;
+                
+                // 横棒を乗り越えた後の次の縦線に移動した位置から再スタートするために、yを少しだけ進める
+                y += stepSize; 
+                
+                // 次のフレームでこの横棒を再チェックしないようにインデックスを進める
+                nextBridgeIndex = i + 1; 
+                
+                // 1ステップで横棒は1本だけ渡る
+                break;
+            }
+        }
+        
+        // 横移動がない場合は下に移動
+        if (!movedHorizontally) {
+            y += stepSize; 
+        }
+        
+        // 現在位置を描画
+        drawCharacter(spacing * currentLine, y);
+        
+        if (y < height - 80) {
+          requestAnimationFrame(animateStep);
+        } else {
+          showResult(currentLine);
+        }
+      };
+      
+      // キャラクター描画ヘルパー関数
+      function drawCharacter(x, y) {
         // 影を描画
         ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
         ctx.beginPath();
@@ -1010,31 +1066,12 @@
         ctx.textAlign = 'center';
         const characters = ['🧙‍♀️', '🧙‍♂️', '👸'];
         ctx.fillText(characters[gameState.selectedCharacter], x, y + 10);
-        
-        // あみだくじルール：横棒に遭遇したら必ず横に移動
-        gameState.bridges.forEach(bridge => {
-          if (Math.abs(y - bridge.y) < 8) {
-            if (currentLine === bridge.line1) {
-              currentLine = bridge.line2;
-              soundManager.playMove();
-            } else if (currentLine === bridge.line2) {
-              currentLine = bridge.line1;
-              soundManager.playMove();
-            }
-          }
-        });
-        
-        y += 1.8; // アニメーション速度（元の3から1.8に変更 = 60%）
-        
-        if (y < height - 80) {
-          requestAnimationFrame(animateStep);
-        } else {
-          showResult(currentLine);
-        }
-      };
+      }
       
       animateStep();
     }
+    
+    // ... (以下の関数は変更なし)
 
     // 結果表示
     function showResult(goalLine) {
