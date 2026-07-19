@@ -1,0 +1,9 @@
+# 旧・未使用の巨大アセット（プレイ時は webp / m4a を使用）
+images/*.png
+images/a
+sounds/a
+sounds/bgm.mp3
+sounds/move.mp3
+sounds/busi.mp3
+sounds/miko.mp3
+sounds/ninja.mp3
